@@ -1,6 +1,7 @@
 package db
 
 import (
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -14,6 +15,14 @@ type user struct {
 
 func UserRegister(username string, password string) bool {
 	result := db.Debug().Limit(1).Where("username = ?", username).Find(&user{})
+
+	hedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return false
+	} else {
+		password = string(hedPassword)
+	}
+
 	if result.RowsAffected == 0 {
 		newUser := user{
 			Username: username,
@@ -29,7 +38,7 @@ func UserLogin(username string, password string) uint {
 	var returnUser user
 	result := db.Debug().Limit(1).Where("username = ?", username).Find(&returnUser)
 	if result.RowsAffected == 1 {
-		if returnUser.Password == password {
+		if bcrypt.CompareHashAndPassword([]byte(returnUser.Password), []byte(password)) == nil {
 			return returnUser.ID
 		}
 	}

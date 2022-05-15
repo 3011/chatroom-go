@@ -24,8 +24,8 @@ func NewRouter() *gin.Engine {
 		})
 		// v1.POST("user/register", api.UserRegister)
 		v1.GET("ws", api.WsHandler)
-		v1.GET("signup", api.UserRegisterHandler)
-		v1.GET("signin", api.UserLoginHandler)
+		v1.POST("signup", api.UserRegisterHandler)
+		v1.POST("signin", api.UserLoginHandler)
 		// v1.POST("login", api.UserLogin)
 	}
 	return r

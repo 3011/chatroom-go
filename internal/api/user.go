@@ -9,8 +9,12 @@ import (
 )
 
 func UserRegisterHandler(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	if len(username) < 3 || len(password) < 6 {
+		c.JSON(200, "username or password err")
+		return
+	}
 
 	if db.UserRegister(username, password) {
 		c.JSON(200, "success")
@@ -21,8 +25,12 @@ func UserRegisterHandler(c *gin.Context) {
 }
 
 func UserLoginHandler(c *gin.Context) {
-	username := c.Query("username")
-	password := c.Query("password")
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	if len(username) < 3 && len(password) < 6 {
+		c.JSON(200, "Login fail")
+		return
+	}
 	id := db.UserLogin(username, password)
 	if id == 0 {
 		c.JSON(200, "Login fail")
