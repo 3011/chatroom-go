@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/3011/chatroom-go/internal/api/jwt"
 	"github.com/3011/chatroom-go/internal/db"
 	"github.com/gin-gonic/gin"
 )
@@ -34,9 +35,22 @@ func UserLoginHandler(c *gin.Context) {
 	id := db.UserLogin(username, password)
 	if id == 0 {
 		c.JSON(200, "Login fail")
-
 		return
 	}
-	c.JSON(200, "Logined: "+strconv.Itoa(int(id)))
+	token, err := jwt.SignToken(id)
+	if err != nil {
+		c.JSON(200, "Login fail")
+		return
+	}
+	cla, err := jwt.ParseToken(token)
+	if err != nil {
+		c.JSON(200, "Login fail token")
+		return
+	}
+	c.JSON(200, (*cla)["exp"])
+
+	c.JSON(200, "Logined: "+strconv.Itoa(int(id))+"\n"+token)
+
+	// println((*cl).Id)
 	return
 }

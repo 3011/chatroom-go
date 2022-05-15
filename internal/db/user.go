@@ -16,6 +16,7 @@ type user struct {
 func UserRegister(username string, password string) bool {
 	result := db.Debug().Limit(1).Where("username = ?", username).Find(&user{})
 
+	// 加密密码
 	hedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return false
@@ -38,6 +39,7 @@ func UserLogin(username string, password string) uint {
 	var returnUser user
 	result := db.Debug().Limit(1).Where("username = ?", username).Find(&returnUser)
 	if result.RowsAffected == 1 {
+		// 解密密码
 		if bcrypt.CompareHashAndPassword([]byte(returnUser.Password), []byte(password)) == nil {
 			return returnUser.ID
 		}
