@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/3011/chatroom-go/internal/api"
+	"github.com/3011/chatroom-go/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,8 +20,13 @@ func NewRouter() *gin.Engine {
 				"title": "Main website",
 			})
 		})
-		v1.GET("ping", func(ctx *gin.Context) {
-			ctx.JSON(200, "success")
+		v1.GET("ping", middleware.AuthMiddleware(), func(ctx *gin.Context) {
+			userid, ok := ctx.Get("userid")
+			if !ok {
+				ctx.JSON(404, gin.H{"data": gin.H{"userid": userid}})
+				return
+			}
+			ctx.JSON(200, gin.H{"data": gin.H{"userid": userid}})
 		})
 		// v1.POST("user/register", api.UserRegister)
 		v1.GET("ws", api.WsHandler)

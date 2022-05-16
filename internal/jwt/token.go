@@ -9,12 +9,13 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-var hmacSampleSecret = []byte("adadad")
+var hmacSampleSecret = []byte("xfR9x")
 
 // 生成Token
 func SignToken(userID uint) (string, error) {
 	claims := &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(time.Second * 1).Unix(),
+		NotBefore: time.Now().Unix(),
+		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 		Id:        strconv.Itoa(int(userID)),
 	}
 
@@ -37,14 +38,13 @@ func ParseToken(tokenString string) (*jwt.MapClaims, error) {
 
 		return hmacSampleSecret, nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return &claims, nil
-	} else {
-		return nil, errors.New("claims error")
 	}
-
+	return nil, errors.New("Invalid")
 }

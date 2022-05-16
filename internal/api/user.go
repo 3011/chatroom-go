@@ -1,56 +1,53 @@
 package api
 
 import (
-	"net/http"
-	"strconv"
-
-	"github.com/3011/chatroom-go/internal/api/jwt"
 	"github.com/3011/chatroom-go/internal/db"
+	"github.com/3011/chatroom-go/internal/jwt"
 	"github.com/gin-gonic/gin"
 )
 
-func UserRegisterHandler(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
+func UserRegisterHandler(ctx *gin.Context) {
+	username := ctx.PostForm("username")
+	password := ctx.PostForm("password")
+
 	if len(username) < 3 || len(password) < 6 {
-		c.JSON(200, "username or password err")
+		responseFail(ctx, "The length of the username or password is illegal", nil)
 		return
 	}
 
-	if db.UserRegister(username, password) {
-		c.JSON(200, "success")
+	if !db.UserRegister(username, password) {
+		responseFail(ctx, "Registration failed", nil)
 		return
 	}
-	http.NotFound(c.Writer, c.Request)
-	return
+	responseSuccess(ctx, "Registration succeeded", nil)
 }
 
-func UserLoginHandler(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
+func UserLoginHandler(ctx *gin.Context) {
+	username := ctx.PostForm("username")
+	password := ctx.PostForm("password")
+
 	if len(username) < 3 && len(password) < 6 {
-		c.JSON(200, "Login fail")
+		responseFail(ctx, "The length of the username or password is illegal", nil)
 		return
 	}
 	id := db.UserLogin(username, password)
 	if id == 0 {
-		c.JSON(200, "Login fail")
+		responseFail(ctx, "Login failed", nil)
 		return
 	}
+
 	token, err := jwt.SignToken(id)
 	if err != nil {
-		c.JSON(200, "Login fail")
+		responseFail(ctx, "Login failed", nil)
 		return
 	}
-	cla, err := jwt.ParseToken(token)
+
+	claims, err := jwt.ParseToken(token)
 	if err != nil {
-		c.JSON(200, "Login fail token")
+		responseFail(ctx, "Login failed", nil)
 		return
 	}
-	c.JSON(200, (*cla)["exp"])
 
-	c.JSON(200, "Logined: "+strconv.Itoa(int(id))+"\n"+token)
-
-	// println((*cl).Id)
+	responseSuccess(ctx, "Login succeeded", gin.H{"user": gin.H{"userid": (*claims)["jti"]}})
 	return
 }
