@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	// test
 	config.Init()
 	db.InitDB()
 	r := router.NewRouter()
